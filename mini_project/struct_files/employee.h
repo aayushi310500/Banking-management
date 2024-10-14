@@ -1,4 +1,4 @@
-struct Customer{
+struct Employee{
     int ID;
     char name[20];
     //int pass;
@@ -7,8 +7,9 @@ struct Customer{
     char email[40];
     char gender;
     int age;
-    
+    bool is_manager;
+    bool is_active;
     // Bank data
-
-    int account_no;
+    // char role[10];
+    // ;
 };

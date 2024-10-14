@@ -19,10 +19,11 @@
 
 #include "../header_files/data.h"
 #include "../header_files/admin_cred.h"
-#include "../struct_files/customer.h"
+//  #include "../struct_files/customer.h"
 #include "admin_pass.h"
 #include "hash_password.h"
-#include "../struct_files/admin.h"
+// #include "../struct_files/admin.h"
+#include "authenticate_admin.h"
 
 
 bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
@@ -34,7 +35,7 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
 
     // int ID;
     bzero(read_buffer, sizeof(read_buffer));
-    bzero(write_buffer, sizeof(write_buffer));
+    bzero(write_buffer, strlen(write_buffer));
 
     if (isAdmin)
         strcpy(write_buffer, ADMIN_LOGIN_WELCOME_MSG);
@@ -56,17 +57,20 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
         perror("Error reading login ID from client!");
         return false;
     }
-    bool userFound = false;
+     char login_id[30];
+    strcpy(login_id,read_buffer);  
+    // bool userFound = false;
     if (isAdmin)
-    {
-        if (strcmp(read_buffer, ADMIN_LOGIN_ID) == 0)
-            userFound = true;
-        else
-        {
-        }
-        if (userFound)
-        {
-            bzero(write_buffer, sizeof(write_buffer));
+    {     
+        
+        // if (strcmp(read_buffer, ADMIN_LOGIN_ID) == 0)
+        //     userFound = true;
+        // else
+        // {
+        // }
+        // if (userFound)
+        // {
+            bzero(write_buffer, strlen(write_buffer));
             wb = write(sock_fd, PASSWORD_MSG, strlen(PASSWORD_MSG));
             if (wb == -1)
             {
@@ -80,30 +84,35 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
                 perror("Error reading password from the client!");
                 return false;
             }
-            char hashed_password[1000];
-           
+            char password[30];
+            strcpy(password,read_buffer);
+
+            //char hashed_password[1000];
+            if(authenticate_admin(sock_fd,login_id,password)){
+                return true;
+            }
                     
                 
-            if (isAdmin)
-            {
-             if (crypto_pwhash_str_verify(hashed_password,ADMIN_PASSWORD , strlen(ADMIN_PASSWORD)) == 0) {
-                  return true;
-             } else {
-                    //printf("Password verification failed.\n");
-                 }
-                    // strcpy(hashed_password, crypt(read_buffer, SALT));
+        //     if (isAdmin)
+        //     {
+        //      if (crypto_pwhash_str_verify(hashed_password,ADMIN_PASSWORD , strlen(ADMIN_PASSWORD)) == 0) {
+        //           return true;
+        //      } else {
+        //             //printf("Password verification failed.\n");
+        //          }
+        //             // strcpy(hashed_password, crypt(read_buffer, SALT));
 
-            bzero(write_buffer, sizeof(write_buffer));
-            wb = write(sock_fd, INVALID_PASSWORD_MSG, strlen(INVALID_PASSWORD_MSG));
-        }
-        else
-        {
-            bzero(write_buffer, sizeof(write_buffer));
-            wb = write(sock_fd, INVALID_LOGIN_MSG, strlen(INVALID_LOGIN_MSG));
-        }
+        //     bzero(write_buffer, sizeof(write_buffer));
+        //     wb = write(sock_fd, INVALID_PASSWORD_MSG, strlen(INVALID_PASSWORD_MSG));
+        // }
+        // else
+        // {
+        //     bzero(write_buffer, sizeof(write_buffer));
+        //     wb = write(sock_fd, INVALID_LOGIN_MSG, strlen(INVALID_LOGIN_MSG));
+        // }
 
         return false;
-    }
+    // }
 }
 }
 

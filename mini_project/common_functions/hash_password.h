@@ -1,5 +1,5 @@
-#ifndef ADMIN_PASSWORD
-#define ADMIN_PASSWORD
+#ifndef ADMIN_PASSWORD_FUNCTION
+#define ADMIN_PASSWORD_FUNCTION
 
 
 #include <openssl/evp.h>

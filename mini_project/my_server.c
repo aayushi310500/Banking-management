@@ -18,10 +18,8 @@ void handle_client(int connection_fd) {
      char read_buffer[1000], write_buffer[1000];
     ssize_t rb, wb;
     int choice;
-
-    
     wb = write(connection_fd, INITIAL_PROMPT, strlen(INITIAL_PROMPT));
-    if (wb == -1)
+    if (wb == -1)   
         perror("Error while sending first prompt to the user!");
     else{
          bzero(read_buffer, sizeof(read_buffer)); //empty buffer
@@ -103,10 +101,10 @@ void main()
     {
         clientadd_size = (int)sizeof(client_address);
         connection_fd = accept(socket_fd, (struct sockaddr *)&client_address, &clientadd_size);
-        if (socket_fd == -1)
+        if (connection_fd == -1)
         {
             perror("Error while connecting to client!");
-            close(socket_fd);
+            close(connection_fd);
         }
         else
         {

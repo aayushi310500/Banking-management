@@ -1,3 +1,5 @@
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
 struct Customer{
     int ID;
     char name[20];
@@ -12,3 +14,4 @@ struct Customer{
 
     int account_no;
 };
+#endif

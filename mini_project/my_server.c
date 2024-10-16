@@ -12,6 +12,7 @@
 #include <stdlib.h>  // Import for `atoi` function
 #include "header_files/data.h"
 #include "common_functions/admin_fun.h"
+#include "customer_functions/customer_funs.h"
 
 
 void handle_client(int connection_fd) {
@@ -40,6 +41,7 @@ void handle_client(int connection_fd) {
             case 2:
                 // Customer
                      printf("customer LOGIN:");
+                     customer_operation_handler(connection_fd);
                 //customer_operation_handler(connection_fd);
                 break;
                 case 3:

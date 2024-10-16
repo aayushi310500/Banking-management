@@ -17,6 +17,8 @@
 #define HASH_HEX_SIZE 64  // SHA-256 produces 64 hex characters
 
 
+// int pass_authentic(int connection_fd,const char* input_pass)
+
 
 int authenticate_admin(int connection_fd,const char *input_login, const char *input_pass) {
     struct Admin admin;
@@ -84,8 +86,6 @@ int authenticate_admin(int connection_fd,const char *input_login, const char *in
         perror("Error writing INVALID_LOGIN_MSG message to client!");
         exit(1);
     }
-
-
         return 0;  // Login failed
     }
 
@@ -133,4 +133,7 @@ int authenticate_admin(int connection_fd,const char *input_login, const char *in
 // void main() {
 //     authenticate_admin("admin123@gmail.com", "admin122");
 // }
+
+
+
 #endif

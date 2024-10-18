@@ -21,15 +21,26 @@ void connection_handler(int socket_fd)
 
     do
     {
+       // printf("hhhh");
     bzero(read_buffer, sizeof(read_buffer)); // Empty the read buffer
+    bzero(write_buffer, sizeof(write_buffer)); // Empty the read buffer
     bzero(buff, sizeof(buff));               // empty buff
     rb = read(socket_fd, read_buffer, sizeof(read_buffer));
-    if (rb == -1)
+    //   printf("------------------------------------------------------------->>>>>>>>>>>>>>>>>>>%s\n", read_buffer);
+    //   printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<-----------------------------------------------------------------------------------------");   
+    if (rb == -1){
+       // printf("IN9");
         perror("Error while reading from client socket!");
-    else if (rb == 0)
+
+    }
+    else if (rb == 0){
+             //   printf("IN10");
         printf("No error received from server! Closing the connection to the server now!\n");
+    }
+        
      else if (strchr(read_buffer, '^') != NULL)
         {
+            //printf("IN1");
             // Skip read from client
             strncpy(buff, read_buffer, strlen(read_buffer) - 1);
             printf("%s\n", buff);
@@ -43,29 +54,44 @@ void connection_handler(int socket_fd)
         else if (strchr(read_buffer, '$') != NULL)
         {
             // Server sent an error message and is now closing it's end of the connection
+           //  printf("IN2");
             strncpy(buff, read_buffer, strlen(read_buffer) - 2);
             printf("%s\n", buff);
+            fflush(stdout);
             printf("Closing the connection to the server now!\n");
             break;
         }
+        else if(strchr(read_buffer, '@') != NULL){
+            // printf("I-----N");
+            // printf("IN3");
+          printf("%s\n", read_buffer);
+        
+        }
         else
         {   
-            bzero(write_buffer, strlen(write_buffer)); // Empty the write buffer
+            // printf("IN4");
+            bzero(write_buffer, sizeof(write_buffer)); // Empty the write buffer
 
             if (strchr(read_buffer, '#') != NULL)
                 strcpy(write_buffer, getpass(read_buffer));
             else
             {
-                // printf("taking user input from the client side..");
+                //  printf("IN5");
                 printf("%s\n", read_buffer);
+                fflush(stdout);
                 scanf("%[^\n]%*c", write_buffer); // Take user input!
-                // printf(" done taking user input from the client side..");
+                // fgets(write_buffer, sizeof(write_buffer), stdin);
+                // write_buffer[strcspn(write_buffer, "\n")] = 0;
+                //  fflush(stdin);
 
-              
+            printf("You entered: '%s'\n", write_buffer);
+
             }
               if(write_buffer){
-            // printf("writng from the client side..");
+              //   printf("IN6");
             wb = write(socket_fd, write_buffer, strlen(write_buffer));
+
+            //  printf("writng from th------e client side..");
             if (wb == -1)
             {
                 perror("Error while writing to client socket!");
@@ -74,7 +100,6 @@ void connection_handler(int socket_fd)
             }
             //  printf("done writng from the client side..");
                 }
-            
             //fflush(stdout);
         }
     

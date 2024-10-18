@@ -1,5 +1,5 @@
-#ifndef ADMIN_FUNCTIONS
-#define ADMIN_FUNCTIONS
+#ifndef ADMIN_FUNCTIONS_H
+#define ADMIN_FUNCTIONS_H
 
 #include <stdio.h> // Import for `printf` & `perror` functions
 #include <errno.h> // Import for `errno` variable
@@ -36,6 +36,7 @@ bool change_admin_password(int connection_fd);
 int add_user(int connection_fd);
 bool change_user_role(int connection_fd);
 bool activate_deactivate_user(int connection_fd);
+bool add_account(int connection_fd);
 
 int add_customers(int connection_fd, bool from_account, int account_num)
 {
@@ -245,11 +246,12 @@ int add_customers(int connection_fd, bool from_account, int account_num)
         return false;
     }
     close(fd);
+
     bzero(write_buffer, sizeof(write_buffer)); // change
-    // printf("Name====%s", curr_customer.name);
-    sprintf(write_buffer, "%s\n%s%s\n%s%s%d\n\n", LOGIN_SUCCESSFULL_MSG, LOGIN_ID_IS, curr_customer.login, LOGIN_PASS_IS, curr_customer.name, curr_customer.ID);
-    // strcat(write_buffer, "^");
-    printf("WriteBuffer====%s", write_buffer);
+                                               // printf("Name====%s", curr_customer.name);
+    sprintf(write_buffer, "%s%s\n%s%s%d", ADMIN_ADD_CUSTOMER_AUTOGEN_LOGIN, curr_customer.login, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, curr_customer.name, curr_customer.ID);
+    strcat(write_buffer, "^");
+    printf("write_buffer====%s", write_buffer);
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {
@@ -258,13 +260,16 @@ int add_customers(int connection_fd, bool from_account, int account_num)
     }
 
     // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    if (!from_account)
+    { // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+        bzero(write_buffer, sizeof(write_buffer));
+        // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
+        strcat(write_buffer, "\nRedirecting you to the main menu ...^");
+        wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    }
 
-    bzero(write_buffer, sizeof(write_buffer));
-    // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
-    strcat(write_buffer, "\nRedirecting you to the main menu ...^");
-    wb = write(connection_fd, write_buffer, strlen(write_buffer));
     rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
-
     return curr_customer.ID;
 }
 
@@ -279,14 +284,15 @@ bool admin_operation_handler(int connection_fd)
         char read_buffer[1000], write_buffer[1000];
         ssize_t rb, wb;
         int choice;
+        bzero(write_buffer, sizeof(write_buffer));
 
         // printf("\n\n..===============..in admin operation=========================");
         while (1)
         {
-
             /* code */
 
             wb = write(connection_fd, ADMIN_MENU, strlen(ADMIN_MENU));
+            bzero(write_buffer, sizeof(write_buffer));
             if (wb == -1)
                 perror("Error while sending first prompt to the user!(admin_fun)");
             else
@@ -351,21 +357,33 @@ bool admin_operation_handler(int connection_fd)
                         break;
                     case 7:
                         printf("closing connection");
+
                         wb = write(connection_fd, CUSTOMER_LOGOUT, strlen(CUSTOMER_LOGOUT));
                         return false;
+                        break;
                     // close(connection_fd); // Close connection
                     // return true;
+                    case 9:
+                    change_user_role(connection_fd);
+                    break;
+                    case 8:
+                        add_account(connection_fd);
+                        break;
                     default:
-                        printf("Invalid choice, returning to menu.");
+                        // printf("Invalid choice, returning to menu.^");
+                        bzero(write_buffer, sizeof(write_buffer));
+                        // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
+                        snprintf(write_buffer, sizeof(write_buffer), "\nRedirecting you to the main menu ...^");
                         wb = write(connection_fd, write_buffer, strlen(write_buffer));
-                        if (wb == -1)
-                        {
-                            perror("Error writing customer info to client!");
-                            return false;
-                        }
+                        rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+                        // if (wb == -1)
+                        // {
+                        //     perror("Error writing customer info to client!");
+                        //     return false;
+                        // }
 
                         // Dummy read to sync with client
-                        rb = read(connection_fd, read_buffer, sizeof(read_buffer));
+                        // rb = read(connection_fd, read_buffer, sizeof(read_buffer));
                         break;
                     }
                 }
@@ -391,6 +409,110 @@ bool admin_operation_handler(int connection_fd)
         return 0;
     }
     return 1;
+}
+
+bool add_account(int connection_fd)
+{
+    ssize_t rb, wb;
+    char read_buffer[2000], write_buffer[2000];
+
+    struct Account curr_account, prev_account;
+
+    int fd = open(ACCOUNT_FILE, O_RDONLY);
+    if (fd == -1 && errno == ENOENT)
+    {
+        // Account file was never created
+        curr_account.account_number = 0;
+    }
+    else if (fd == -1)
+    {
+        perror("Error while opening account file");
+        return false;
+    }
+    else
+    {
+        int offset = lseek(fd, -sizeof(struct Account), SEEK_END);
+        if (offset == -1)
+        {
+            perror("Error seeking to last Account record!");
+            return false;
+        }
+
+        struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
+        int lockingStatus = fcntl(fd, F_SETLKW, &lock);
+        if (lockingStatus == -1)
+        {
+            perror("Error obtaining read lock on Account record!");
+            return false;
+        }
+
+        rb = read(fd, &prev_account, sizeof(struct Account));
+        if (rb == -1)
+        {
+            perror("Error while reading Account record from file!");
+            return false;
+        }
+
+        lock.l_type = F_UNLCK;
+        fcntl(fd, F_SETLK, &lock);
+
+        close(fd);
+
+        curr_account.account_number = prev_account.account_number + 1;
+    }
+    // wb = write(connection_fd, ADMIN_ADD_ACCOUNT_TYPE, strlen(ADMIN_ADD_ACCOUNT_TYPE));
+    // if (wb == -1)
+    // {
+    //     perror("Error writing ADMIN_ADD_ACCOUNT_TYPE message to client!");
+    //     return false;
+    // }
+
+    // bzero(read_buffer, sizeof(read_buffer));
+    // rb = read(connection_fd, &read_buffer, sizeof(read_buffer));
+    // if (rb == -1)
+    // {
+    //     perror("Error reading account type response from client!");
+    //     return false;
+    // }
+
+    //  curr_account.isRegularAccount = atoi(read_buffer) == 1 ? true : false;
+
+    curr_account.customer_id = add_customers(connection_fd, true, curr_account.account_number);
+
+    // if (curr_account.isRegularAccount)
+    //     curr_account.owners[1] = -1;
+    // else
+    //     curr_account.owners[1] = add_customer(connection_fd, false, curr_account.account_number);
+    printf("Customer added successfully, proceeding to account addition.\n");
+    printf("Current Account ID generated: %d\n", curr_account.account_number);
+
+    curr_account.is_active = true;
+    curr_account.balance = 0;
+
+    memset(curr_account.transactions, -1, MAX_TRANSACTIONS * sizeof(int));
+
+    fd = open(ACCOUNT_FILE, O_CREAT | O_APPEND | O_WRONLY, S_IRWXU);
+    if (fd == -1)
+    {
+        perror("Error while creating / opening account file!");
+        return false;
+    }
+
+    wb = write(fd, &curr_account, sizeof(struct Account));
+    if (wb == -1)
+    {
+        perror("Error while writing Account record to file!");
+        return false;
+    }
+
+    close(fd);
+    //  rb = read(connection_fd, read_buffer, sizeof(read));
+    bzero(write_buffer, sizeof(write_buffer));
+    sprintf(write_buffer, "%s%d\n%s", ACCOUNT_NUMBER_ADDED, curr_account.account_number, "Account added successfully!\nRedirecting you to the main menu ...^");
+    printf("Final message to client: %s\n", write_buffer);
+    wb = write(connection_fd, write_buffer, strlen(write_buffer));
+    rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    return true;
 }
 
 // void add_customer()
@@ -583,7 +705,7 @@ int add_user(int connection_fd)
         return false;
     }
     close(fd);
-    bzero(write_buffer, strlen(write_buffer)); // change
+    bzero(write_buffer, sizeof(write_buffer)); // change
     // printf("EMAIL====%s",curr_customer.email);
     sprintf(write_buffer, "%s\n%s%s\n%s%s%d\n\n", LOGIN_SUCCESSFULL_MSG, LOGIN_ID_IS, curr_user.login_id, LOGIN_PASS_IS, curr_user.name, curr_user.ID);
     // strcat(write_buffer, "^");
@@ -596,10 +718,10 @@ int add_user(int connection_fd)
 
     // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
 
-    bzero(write_buffer, strlen(write_buffer));
+    bzero(write_buffer, sizeof(write_buffer));
     // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
-    strcat(write_buffer, "\nRedirecting you to the main menu ...^");
-    wb = write(connection_fd, write_buffer, strlen(write_buffer));
+    strcat(write_buffer, "\nInvalid choice..\nRedirecting you to the main menu ...^");
+    wb = write(connection_fd, write_buffer, sizeof(write_buffer));
     rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
 
     return curr_user.ID;
@@ -628,7 +750,7 @@ bool change_user_role(int connection_fd)
     user_id = atoi(read_buffer); // Convert input to integer
 
     // Search user by ID in the file (you should load all users and search by ID)
-    int fd = open("stored_data/users.txt", O_RDWR);
+    int fd = open(USER_FILE, O_RDWR);
     if (fd == -1)
     {
         perror("Error opening user file");
@@ -671,7 +793,7 @@ bool change_user_role(int connection_fd)
     }
     close(fd);
     wb = write(connection_fd, "User role updated successfully.\n", strlen("User role updated successfully.\n"));
-    bzero(write_buffer, strlen(write_buffer));
+    bzero(write_buffer, sizeof(write_buffer));
     // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
     strcat(write_buffer, "\nRedirecting you to the main menu ...^");
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
@@ -728,111 +850,10 @@ bool activate_deactivate_user(int connection_fd)
     close(fd);
     wb = write(connection_fd, "User account status updated.\n", strlen("User account status updated.\n"));
     wb = write(connection_fd, "User role updated successfully.\n", strlen("User role updated successfully.\n"));
-    bzero(write_buffer, strlen(write_buffer));
+    bzero(write_buffer, sizeof(write_buffer));
     // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
     strcat(write_buffer, "\nRedirecting you to the main menu ...^");
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
-    rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
-    return true;
-}
-
-bool add_account(int connection_fd)
-{
-    ssize_t rb, wb;
-    char read_buffer[1000], write_buffer[1000];
-
-    struct Account curr_account, prev_account;
-
-    int fd = open(ACCOUNT_FILE, O_RDONLY);
-    if (fd == -1 && errno == ENOENT)
-    {
-        // Account file was never created
-        curr_account.account_number = 0;
-    }
-    else if (fd == -1)
-    {
-        perror("Error while opening account file");
-        return false;
-    }
-    else
-    {
-        int offset = lseek(fd, -sizeof(struct Account), SEEK_END);
-        if (offset == -1)
-        {
-            perror("Error seeking to last Account record!");
-            return false;
-        }
-
-        struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
-        int status = fcntl(fd, F_SETLKW, &lock);
-        if (status == -1)
-        {
-            perror("Error obtaining read lock on Account record!");
-            return false;
-        }
-
-        rb = read(fd, &prev_account, sizeof(struct Account));
-        if (rb == -1)
-        {
-            perror("Error while reading Account record from file!");
-            return false;
-        }
-
-        lock.l_type = F_UNLCK;
-        fcntl(fd, F_SETLK, &lock);
-
-        close(fd);
-
-        curr_account.account_number = prev_account.account_number + 1;
-    }
-    // wb = write(connection_fd, ADMIN_ADD_ACCOUNT_TYPE, strlen(ADMIN_ADD_ACCOUNT_TYPE));
-    // if (wb == -1)
-    // {
-    //     perror("Error writing ADMIN_ADD_ACCOUNT_TYPE message to client!");
-    //     return false;
-    // }
-
-    // bzero(read_buffer, sizeof(read_buffer));
-    // rb = read(connection_fd, &read_buffer, sizeof(read_buffer));
-    // if (rb == -1)
-    // {
-    //     perror("Error reading account type response from client!");
-    //     return false;
-    // }
-
-    // curr_account.isRegularAccount = atoi(read_buffer) == 1 ? true : false;
-
-    curr_account.customer_id = add_customers(connection_fd, true, curr_account.account_number);
-
-    // if (curr_account.isRegularAccount)
-    //     curr_account.owners[1] = -1;
-    // else
-    //     curr_account.owners[1] = add_customer(connection_fd, false, curr_account.account_number);
-
-    curr_account.is_active = true;
-    curr_account.balance = 0;
-
-    memset(curr_account.transactions, -1, MAX_TRANSACTIONS * sizeof(int));
-
-    fd = open(ACCOUNT_FILE, O_CREAT | O_APPEND | O_WRONLY, S_IRWXU);
-    if (fd == -1)
-    {
-        perror("Error while creating / opening account file!");
-        return false;
-    }
-
-    wb = write(fd, &curr_account, sizeof(struct Account));
-    if (wb == -1)
-    {
-        perror("Error while writing Account record to file!");
-        return false;
-    }
-
-    close(fd);
-    bzero(write_buffer, sizeof(write_buffer));
-    sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
-    strcat(write_buffer, "\nRedirecting you to the main menu ...^");
-    wb = write(connection_fd, write_buffer, sizeof(write_buffer));
     rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
     return true;
 }
@@ -905,7 +926,7 @@ bool get_customer_details(int connection_fd, int customer_id)
     if (!customer_found)
     {
         // Customer record not found
-        bzero(write_buffer, strlen(write_buffer));
+        bzero(write_buffer, sizeof(write_buffer));
         strcpy(write_buffer, CUSTOMER_ID_DOESNT_EXIT);
         strcat(write_buffer, "^");
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
@@ -924,6 +945,7 @@ bool get_customer_details(int connection_fd, int customer_id)
 
     // Prepare and send customer details to the client
     bzero(write_buffer, sizeof(write_buffer));
+    perror("getting customer details");
     sprintf(write_buffer, "Customer Details - \n\tID : %d\n\tName : %s\n\tGender : %c\n\tAge: %d\n\tAccount Number : %d\n\tLoginID : %s",
             customer.ID, customer.name, customer.gender, customer.age, customer.account_no, customer.login);
 
@@ -1178,8 +1200,8 @@ bool change_admin_password(int connection_fd)
     current_hex_hash[HASH_HEX_SIZE] = '\0'; // Null-terminate the string
 
     // Debugging: Print current and stored hashes
-    printf("Current hash pass: %s\n", current_hex_hash);
-    printf("Stored password: %s\n", stored_hash);
+    //  printf("Current hash pass: %s\n", current_hex_hash);
+    //printf("Stored password: %s\n", stored_hash);
 
     // Compare the hashed password with the stored hash
     if (strcmp(current_hex_hash, stored_hash) != 0)

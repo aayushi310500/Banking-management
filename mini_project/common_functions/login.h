@@ -35,7 +35,7 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
 
     // int ID;
     bzero(read_buffer, sizeof(read_buffer));
-    bzero(write_buffer, strlen(write_buffer));
+    bzero(write_buffer, sizeof(write_buffer));
 
     if (isAdmin)
         strcpy(write_buffer, ADMIN_LOGIN_WELCOME_MSG);
@@ -45,7 +45,7 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
     strcat(write_buffer, "\n");
     strcat(write_buffer, LOGIN_ID_MSG);
 
-    wb = write(sock_fd, write_buffer, strlen(write_buffer));
+    wb = write(sock_fd, write_buffer, sizeof(write_buffer));
     if (wb == -1)
     {
         perror("Error writing WELCOME & LOGIN_ID message to the client!");
@@ -70,7 +70,7 @@ bool login_handler(bool isAdmin, int sock_fd, struct Customer *ptrToCustomerID)
         // }
         // if (userFound)
         // {
-            bzero(write_buffer, strlen(write_buffer));
+            bzero(write_buffer, sizeof(write_buffer));
             wb = write(sock_fd, PASSWORD_MSG, strlen(PASSWORD_MSG));
             if (wb == -1)
             {

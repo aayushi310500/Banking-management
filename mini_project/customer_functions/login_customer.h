@@ -224,8 +224,8 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
     ssize_t bytesRead;
     while ((bytesRead=read(customerFileFD, &customer, sizeof(struct Customer))) > 0)
     {
-        printf("customer_stored_login: %s\n", customer.login);
-        printf("input_login: %s\n", input_login);
+        // printf("customer_stored_login: %s\n", customer.login);
+        // printf("input_login: %s\n", input_login);
         if (strcmp(customer.login, input_login) == 0)
         {
             userFound = true;
@@ -263,8 +263,8 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
     hex_hash[HASH_HEX_SIZE] = '\0'; // Ensure null termination
 
     // Compare the hashed input password with the stored password hash
-    printf("Stored Password Hash: %s\n", customer.password);
-    printf("Input Password Hash: %s\n", hex_hash);
+    // printf("Stored Password Hash: %s\n", customer.password);
+    // printf("Input Password Hash: %s\n", hex_hash);
 
     if (strcmp(hex_hash, customer.password) == 0)
     {
@@ -287,6 +287,7 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
         }
         return 0; // Authentication failed
     }
+    return 1;
 }
 
 // Function for handling customer login
@@ -347,6 +348,7 @@ bool login_handler_customer(int connFD, struct Customer *ptrToCustomerID)
     // Authenticate the user
     if (authenticate_customer(connFD, login_id, password))
     {
+       // printf("return from login handler");
         return true;
     }
 

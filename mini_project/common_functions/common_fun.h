@@ -101,7 +101,7 @@
 
 
 
-bool get_account_details(int connection_fd, struct Account *customer_account) {
+bool get_account_details(int connection_fd, struct Account *customer_account,int flag) {
     ssize_t rb, wb;
     char read_buffer[2000], write_buffer[2000];
     char buff[2000];
@@ -120,6 +120,7 @@ bool get_account_details(int connection_fd, struct Account *customer_account) {
 
         bzero(read_buffer, sizeof(read_buffer));
         rb = read(connection_fd, read_buffer, sizeof(read_buffer));
+         read_buffer[strcspn(read_buffer, "\n")] = '\0';
         if (rb == -1) {
             perror("Error reading account number response from client!");
            // close(fd); // Added to close the file before returning
@@ -146,6 +147,7 @@ bool get_account_details(int connection_fd, struct Account *customer_account) {
             return false;
         }
         rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        
         return false;
     }
 
@@ -186,7 +188,7 @@ bool get_account_details(int connection_fd, struct Account *customer_account) {
         }
     }
 
-    close(fd);
+    close(fd);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
     if (!account_found) {
         bzero(write_buffer, sizeof(write_buffer));
@@ -198,9 +200,9 @@ bool get_account_details(int connection_fd, struct Account *customer_account) {
             return false;
         }
         return false;
-    } else {
+    } else {                                                                                                                                                                                                                                                            
       //  printf("INSIDE ELSE++++++++++++++");
-
+      if(flag){
         perror("inside  get account  details");
         bzero(write_buffer, sizeof(write_buffer));
         sprintf(write_buffer, "Account Details - \n\tAccount Number : %d\n\tAccount Status : %s",
@@ -208,12 +210,13 @@ bool get_account_details(int connection_fd, struct Account *customer_account) {
         if (account.is_active) {
             sprintf(buff, "\n\tAccount Balance: ₹ %ld ", account.balance);
             strcat(write_buffer, buff);
-            strcat(write_buffer, "\n@");
+            strcat(write_buffer, "@");
         }
-
+        
         // strcat(write_buffer, "");
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
-        //  rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+      }
+       //  rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
     }
    
     return true;
@@ -334,7 +337,7 @@ bool get_account_by_number(int connection_fd, int account_num,struct Account *cu
 
         // strcat(write_buffer, "\n^");
        // wb = write(connection_fd, write_buffer, strlen(write_buffer));
-        //  rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+         rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
     //  }
    
     return true;

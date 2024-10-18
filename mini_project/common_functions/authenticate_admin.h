@@ -103,7 +103,7 @@ int authenticate_admin(int connection_fd,const char *input_login, const char *in
     // Compare the hashed password with the stored hash
     if (strcmp(hex_hash, stored_hash) == 0) {
 
-         sprintf(write_buffer, "%s", LOGIN_SUCCESSFULL_MSG);
+         sprintf(write_buffer, "%s", LOGIN_SUCCESSFULL_MSG_ADMIN);
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {

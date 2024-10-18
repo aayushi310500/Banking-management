@@ -57,10 +57,12 @@
 // #define ADMIN_ADD_USER_ISACTIVE "Enter whether "
 #define ADMIN_ADD_USER_ROLE "Enter User's Role"
 
+
 //RESULT 
 #define LOGIN_ID_IS "Your Login id is:"
 #define LOGIN_PASS_IS "Your Login Password is:"
-#define LOGIN_SUCCESSFULL_MSG "Login is done successfully!!"
+#define LOGIN_SUCCESSFULL_MSG "Login is done successfully!!@"
+#define LOGIN_SUCCESSFULL_MSG_ADMIN "Login is done successfully!!"
 
 
 //MODIFYING CUSTOMER DETAIL
@@ -119,6 +121,19 @@
 #define TRANSFER_INVALID "Amount you are transfering is invalid \n^"
 
 
+//ADDING FEEDBACK
+#define ADD_FEEDBACK "Enter feedback details.\n"
+
+
+//PASSWORD CHANGE
+#define PASSWORD_CHANGE_OLD_PASS "Enter your old password"
+#define PASSWORD_CHANGE_OLD_PASS_INVALID "The entered password doesn't seem to match with the old password"
+#define PASSWORD_CHANGE_NEW_PASS "Enter the new password"
+#define PASSWORD_CHANGE_NEW_PASS_RE "Reenter the new password"
+#define PASSWORD_CHANGE_NEW_PASS_INVALID "The new password and the reentered passwords don't seem to pass!^"
+#define PASSWORD_CHANGE_SUCCESS "Password successfully changed!^"
+
+
 //INVALID CHOICES
 #define ERRON_INPUT_FOR_NUMBER "It seems you have passed a sequence of alphabets when a number was expected or you have entered an invalid number!\nYou'll now be redirected to the main menu!^"
 #define INVALID_MENU_CHOICE "It seems you've made an invalid menu choice\nYou'll now be redirected to the main menu!^"
@@ -132,3 +147,4 @@
 #define USER_FILE "/home/aayushi312000/MTech/SS/Banking-management/mini_project/stored_data/user_records.txt"
 #define TRANSACTION_FILE "/home/aayushi312000/MTech/SS/Banking-management/mini_project/stored_data/transaction_records.txt"
 #define BANK_EMPLOYEE_FILE "/home/aayushi312000/MTech/SS/Banking-management/mini_project/stored_data/employee_records.txt"
+#define FEEDBACK_FILE "/home/aayushi312000/MTech/SS/Banking-management/mini_project/stored_data/employee_records.txt"

@@ -269,6 +269,7 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
     if (strcmp(hex_hash, customer.password) == 0)
     {
         sprintf(write_buffer, "%s", LOGIN_SUCCESSFULL_MSG);
+        printf("%s", write_buffer);
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
         if (wb == -1)
         {
@@ -348,7 +349,7 @@ bool login_handler_customer(int connFD, struct Customer *ptrToCustomerID)
     // Authenticate the user
     if (authenticate_customer(connFD, login_id, password))
     {
-       // printf("return from login handler");
+       printf("return from login handler");
         return true;
     }
 

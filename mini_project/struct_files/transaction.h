@@ -1,5 +1,5 @@
-#ifndef TRANSACTIONS
-#define TRANSACTIONS
+#ifndef TRANSACTIONS_H
+#define TRANSACTIONS_H
 
 #include <time.h>
 

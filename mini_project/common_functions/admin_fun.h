@@ -37,6 +37,8 @@ int add_user(int connection_fd);
 bool change_user_role(int connection_fd);
 bool activate_deactivate_user(int connection_fd);
 bool add_account(int connection_fd);
+bool modify_user_details(int connection_fd);
+
 
 int add_customers(int connection_fd, bool from_account, int account_num)
 {
@@ -248,10 +250,9 @@ int add_customers(int connection_fd, bool from_account, int account_num)
     close(fd);
 
     bzero(write_buffer, sizeof(write_buffer)); // change
-                                               // printf("Name====%s", curr_customer.name);
     sprintf(write_buffer, "%s%s\n%s%s%d", ADMIN_ADD_CUSTOMER_AUTOGEN_LOGIN, curr_customer.login, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, curr_customer.name, curr_customer.ID);
     strcat(write_buffer, "^");
-    printf("write_buffer====%s", write_buffer);
+    // printf("write_buffer====%s", write_buffer);
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {
@@ -364,10 +365,13 @@ bool admin_operation_handler(int connection_fd)
                     // close(connection_fd); // Close connection
                     // return true;
                     case 9:
-                    change_user_role(connection_fd);
-                    break;
+                        change_user_role(connection_fd);
+                        break;
                     case 8:
                         add_account(connection_fd);
+                        break;
+                    case 10:
+                        modify_user_details(connection_fd);
                         break;
                     default:
                         // printf("Invalid choice, returning to menu.^");
@@ -705,10 +709,12 @@ int add_user(int connection_fd)
         return false;
     }
     close(fd);
+
     bzero(write_buffer, sizeof(write_buffer)); // change
-    // printf("EMAIL====%s",curr_customer.email);
-    sprintf(write_buffer, "%s\n%s%s\n%s%s%d\n\n", LOGIN_SUCCESSFULL_MSG, LOGIN_ID_IS, curr_user.login_id, LOGIN_PASS_IS, curr_user.name, curr_user.ID);
+    sprintf(write_buffer, "%s%s\n%s%s%d\n", ADMIN_ADD_CUSTOMER_AUTOGEN_LOGIN, curr_user.login_id, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, curr_user.name, curr_user.ID);
+    strcat(write_buffer, "\nRedirecting you to the main menu ...^");
     // strcat(write_buffer, "^");
+    // printf("write_buffer====%s", write_buffer);
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {
@@ -717,12 +723,35 @@ int add_user(int connection_fd)
     }
 
     // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
-
-    bzero(write_buffer, sizeof(write_buffer));
+    // if (!from_account)
+    // { // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    // bzero(write_buffer, sizeof(write_buffer));
     // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
-    strcat(write_buffer, "\nInvalid choice..\nRedirecting you to the main menu ...^");
-    wb = write(connection_fd, write_buffer, sizeof(write_buffer));
+
+    // wb = write(connection_fd, write_buffer, strlen(write_buffer));
     rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    // }
+
+    // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+
+    // bzero(write_buffer, sizeof(write_buffer)); // change
+    // // printf("EMAIL====%s",curr_customer.email);
+    // sprintf(write_buffer, "%s\n%s%s\n%s%s%d\n\n", LOGIN_SUCCESSFULL_MSG, LOGIN_ID_IS, curr_user.login_id, LOGIN_PASS_IS, curr_user.name, curr_user.ID);
+    // strcat(write_buffer, "^");
+    // wb = write(connection_fd, write_buffer, strlen(write_buffer));
+    // if (wb == -1)
+    // {
+    //     perror("Error sending customer loginID and password to the client!");
+    //     return false;
+    // }
+
+    //  rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+
+    // bzero(write_buffer, sizeof(write_buffer));
+    // // sprintf(write_buffer, "%s%d", ADMIN_ADD_ACCOUNT_NUMBER, curr_account.account_number);
+    // strcat(write_buffer, "\nInvalid choice..\nRedirecting you to the main menu ...^");
+    // wb = write(connection_fd, write_buffer, sizeof(write_buffer));
+    // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
 
     return curr_user.ID;
 }
@@ -1201,7 +1230,7 @@ bool change_admin_password(int connection_fd)
 
     // Debugging: Print current and stored hashes
     //  printf("Current hash pass: %s\n", current_hex_hash);
-    //printf("Stored password: %s\n", stored_hash);
+    // printf("Stored password: %s\n", stored_hash);
 
     // Compare the hashed password with the stored hash
     if (strcmp(current_hex_hash, stored_hash) != 0)
@@ -1509,4 +1538,313 @@ bool modify_customer_details(int connection_fd)
 
     return true;
 }
+
+bool modify_user_details(int connection_fd)
+{
+    ssize_t rb, wb;
+    char read_buffer[1000], write_buffer[1000];
+
+    struct User user;
+
+    int user_id;
+
+    off_t offset;
+    int status;
+    // bzero(read_buffer, sizeof(read_buffer));
+    wb = write(connection_fd, ADMIN_MOD_USER_ID, strlen(ADMIN_MOD_USER_ID));
+    if (wb == -1)
+    {
+        perror("Error while writing ADMIN_MOD_CUSTOMER_ID message to client!");
+        return false;
+    }
+    bzero(read_buffer, sizeof(read_buffer));
+    rb = read(connection_fd, read_buffer, sizeof(read_buffer));
+    if (rb == -1)
+    {
+        perror("Error while reading user ID from client!");
+        return false;
+    }
+
+    user_id = atoi(read_buffer);
+
+    // int fd = open(USER_FILE, O_RDONLY);
+    // if (fd == -1)
+    // {
+    //     // User File doesn't exist
+    //     bzero(write_buffer, sizeof(write_buffer));
+    //     strcpy(write_buffer, USER_ID_DOESNT_EXIT);
+    //     strcat(write_buffer, "^");
+    //     wb = write(connection_fd, write_buffer, strlen(write_buffer));
+    //     if (wb == -1)
+    //     {
+    //         perror("Error while writing user_ID_DOESNT_EXIT message to client!");
+    //         return false;
+    //     }
+    //     rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+    //     return false;
+    // }
+
+    //  offset = lseek(fd, user_id * sizeof(struct User), SEEK_SET);
+    // if (errno == EINVAL)
+    // {
+    //     // user record doesn't exist
+    //     bzero(write_buffer, sizeof(write_buffer));
+    //     strcpy(write_buffer, USER_ID_DOESNT_EXIT);
+    //     strcat(write_buffer, "^");
+    //     wb = write(connection_fd, write_buffer, strlen(write_buffer));
+    //     if (wb == -1)
+    //     {
+    //         perror("Error while writing user_ID_DOESNT_EXIT message to client!");
+    //         return false;
+    //     }
+    //     rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+    //     return false;
+    // }
+    // else if (offset == -1)
+    // {
+    //     perror("Error while seeking to required user record!");
+    //     return false;
+    // }
+
+    // struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct User), getpid()};
+
+    // // Lock the record to be read
+    // status = fcntl(fd, F_SETLKW, &lock);
+    // if (status == -1)
+    // {
+    //     perror("Couldn't obtain lock on user record!");
+    //     return false;
+    // }
+
+    // rb = read(fd, &user, sizeof(struct User));
+    // if (rb == -1)
+    // {
+    //     perror("Error while reading user record from the file!");
+    //     return false;
+    // }
+
+    // // Unlock the record
+    // lock.l_type = F_UNLCK;
+    // fcntl(fd, F_SETLK, &lock);
+
+    // close(fd);
+
+    bool found = false;
+    int fd = open(USER_FILE, O_RDWR);
+    lseek(fd,0,SEEK_SET);
+    if (fd == -1)
+    {
+        perror("User file doesn't exist");
+        strcpy(write_buffer, USER_ID_DOESNT_EXIT);
+        strcat(write_buffer, "^");
+        wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        return false;
+    }
+
+    // Read through the user file to find the matching user ID
+    while (read(fd, &user, sizeof(struct User)) == sizeof(struct User))
+    {
+        if (user.ID == user_id)
+        {
+            found = true;
+            break; // Correct user found
+        }
+    }
+
+    if (!found)
+    {
+        perror("User ID does not exist");
+        strcpy(write_buffer, USER_ID_DOESNT_EXIT);
+        strcat(write_buffer, "^");
+        wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        close(fd);
+        return false;
+    }
+
+    // Lock the found record for modification
+    // struct flock lock = {F_RDLCK, SEEK_SET, -sizeof(struct User), sizeof(struct User), getpid()};
+    // if (fcntl(fd, F_SETLKW, &lock) == -1)
+    // {
+    //     perror("Couldn't obtain lock on user record!");
+    //     close(fd);
+    //     return false;
+    // }
+
+    // Assume some modification happens here
+
+    // Unlock the record
+    // lock.l_type = F_UNLCK;
+    // fcntl(fd, F_SETLK, &lock);
+
+    // Close the file
+    close(fd);
+
+    wb = write(connection_fd, ADMIN_MOD_USER_MENU, strlen(ADMIN_MOD_USER_MENU));
+    if (wb == -1)
+    {
+        perror("Error while writing ADMIN_MOD_USER_MENU message to client!");
+        return false;
+    }
+    rb = read(connection_fd, read_buffer, sizeof(read_buffer));
+    if (rb == -1)
+    {
+        perror("Error while getting user modification menu choice from client!");
+        return false;
+    }
+
+    int choice = atoi(read_buffer);
+    if (choice == 0)
+    { // A non-numeric string was passed to atoi
+        bzero(write_buffer, sizeof(write_buffer));
+        strcpy(write_buffer, ERRON_INPUT_FOR_NUMBER);
+        wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        if (wb == -1)
+        {
+            perror("Error while writing ERRON_INPUT_FOR_NUMBER message to client!");
+            return false;
+        }
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        return false;
+    }
+
+    bzero(read_buffer, sizeof(read_buffer));
+    switch (choice)
+    {
+    case 1:
+        wb = write(connection_fd, ADMIN_MOD_USER_NEW_NAME, strlen(ADMIN_MOD_USER_NEW_NAME));
+        if (wb == -1)
+        {
+            perror("Error while writing ADMIN_MOD_USER_NEW_NAME message to client!");
+            return false;
+        }
+        rb = read(connection_fd, &read_buffer, sizeof(read_buffer));
+        if (rb == -1)
+        {
+            perror("Error while getting response for user's new name from client!");
+            return false;
+        }
+        strcpy(user.name, read_buffer);
+        break;
+    case 2:
+        wb = write(connection_fd, ADMIN_MOD_USER_NEW_AGE, strlen(ADMIN_MOD_USER_NEW_AGE));
+        if (wb == -1)
+        {
+            perror("Error while writing ADMIN_MOD_USER_NEW_AGE message to client!");
+            return false;
+        }
+        rb = read(connection_fd, &read_buffer, sizeof(read_buffer));
+        if (rb == -1)
+        {
+            perror("Error while getting response for user's new age from client!");
+            return false;
+        }
+        int updatedAge = atoi(read_buffer);
+        if (updatedAge == 0)
+        {
+            // Either client has sent age as 0 (which is invalid) or has entered a non-numeric string
+            bzero(write_buffer, sizeof(write_buffer));
+            strcpy(write_buffer, ERRON_INPUT_FOR_NUMBER);
+            wb = write(connection_fd, write_buffer, strlen(write_buffer));
+            if (wb == -1)
+            {
+                perror("Error while writing ERRON_INPUT_FOR_NUMBER message to client!");
+                return false;
+            }
+            rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+            return false;
+        }
+        user.age = updatedAge;
+        break;
+    case 3:
+        wb = write(connection_fd, ADMIN_MOD_USER_NEW_GENDER, strlen(ADMIN_MOD_USER_NEW_GENDER));
+        if (wb == -1)
+        {
+            perror("Error while writing ADMIN_MOD_USER_NEW_GENDER message to client!");
+            return false;
+        }
+        rb = read(connection_fd, &read_buffer, sizeof(read_buffer));
+        if (rb == -1)
+        {
+            perror("Error while getting response for user's new gender from client!");
+            return false;
+        }
+        user.gender = read_buffer[0];
+        break;
+    default:
+        bzero(write_buffer, sizeof(write_buffer));
+        strcpy(write_buffer, INVALID_MENU_CHOICE);
+        wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        if (wb == -1)
+        {
+            perror("Error while writing INVALID_MENU_CHOICE message to client!");
+            return false;
+        }
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        return false;
+    }
+
+    fd = open(USER_FILE, O_RDWR);
+    if (fd == -1)
+    {
+        perror("Error while opening user file");
+        return false;
+    }
+
+    // Loop through the file to find the user with the matching ID
+    struct User temp_user;
+    // lseek(fd,0,SEEK_SET);
+    while (true)
+    {
+        // Read the user record from the file
+        rb = read(fd, &temp_user, sizeof(struct User));
+        if (rb == -1)
+        {
+            perror("Error while reading user record");
+            close(fd);
+            return false;
+        }
+
+        // Check if the end of the file is reached
+        if (rb == 0)
+        {
+            perror("User with ID not found.\n");
+            close(fd);
+            return false;
+        }
+
+        // Check if the current record matches the search ID
+        if (temp_user.ID == user_id)
+        {
+            // Copy the found record to the output parameter
+            //*found_user = temp_user;
+
+            lseek(fd, -sizeof(struct User), SEEK_CUR);
+            if (write(fd, &user, sizeof(struct User)) == -1)
+            {
+                perror("Error updating user status");
+                close(fd);
+                return false;
+            }
+            // rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+            close(fd);
+            return true;
+        }
+    }
+
+    // Close the file descriptor
+    // close(fd);
+
+    wb = write(connection_fd, ADMIN_MOD_USER_SUCCESS, strlen(ADMIN_MOD_USER_SUCCESS));
+    if (wb == -1)
+    {
+        perror("Error while writing ADMIN_MOD_USER_SUCCESS message to client!");
+        return false;
+    }
+    rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+
+    return true;
+}
+
 #endif

@@ -22,7 +22,7 @@ void connection_handler(int socket_fd)
 
     do
     {
-        printf("hhhh");
+        // printf("hhhh");
         // fflush(stdout);
         // fflush(stdin);
         bzero(read_buffer, sizeof(read_buffer));   // Empty the read buffer
@@ -49,7 +49,7 @@ void connection_handler(int socket_fd)
 
         else if (strchr(read_buffer, '^') != NULL)
         {
-            printf("IN1");
+            // printf("IN1");
             // Skip read from client
             // fflush(stdout);
             // fflush(stdin);
@@ -82,18 +82,19 @@ void connection_handler(int socket_fd)
             // printf("I-----N");
             // fflush(stdout);
             // fflush(stdin);
-            printf("IN3");
+            //printf("IN3");
             // fflush(stdout);
             // fflush(stdin);
             printf("%s\n", read_buffer);
-            bzero(read_buffer, sizeof(read_buffer));
+           // bzero(read_buffer, sizeof(read_buffer));
             // fflush(stdout);
             // fflush(stdin);
-            continue;
+           // printf("IN3");
+           // continue;
         }
         else
         {
-            printf("IN4");
+            //printf("IN4");
             bzero(write_buffer, sizeof(write_buffer)); // Empty the write buffer
 
             if (strchr(read_buffer, '#') != NULL)
@@ -102,7 +103,7 @@ void connection_handler(int socket_fd)
             {
                 // fflush(stdout);
                 // fflush(stdin);
-                printf("IN5");
+               // printf("IN5");
                 printf("%s", read_buffer);
                 // fflush(stdout);
                 // fflush(stdin);
@@ -115,13 +116,13 @@ void connection_handler(int socket_fd)
                 // write_buffer[strcspn(write_buffer, "\n")] = 0;
                 //  fflush(stdin);
 
-                printf("You entered: '%s'", write_buffer);
+               // printf("You entered: '%s'", write_buffer);
                 // fflush(stdout);
                 // fflush(stdin);
             }
-            if (strlen(write_buffer) >= 1)
+            if (write_buffer)
             {
-                printf("IN6");
+                //printf("IN6");
                 wb = write(socket_fd, write_buffer, strlen(write_buffer));
 
                 //  printf("writng from th------e client side..");

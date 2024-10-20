@@ -101,13 +101,14 @@
 
 
 
+
 bool get_account_details(int connection_fd, struct Account *customer_account,int flag) {
     ssize_t rb, wb;
     char read_buffer[2000], write_buffer[2000];
     char buff[2000];
 
     struct Account account;
-     perror("INSIDE.");
+    // perror("INSIDE.");
     int account_num;
     
     if (customer_account == NULL) {
@@ -199,6 +200,7 @@ bool get_account_details(int connection_fd, struct Account *customer_account,int
             perror("Error writing ACCOUNT_ID_DOESNT_EXIST message to client!");
             return false;
         }
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
         return false;
     } else {                                                                                                                                                                                                                                                            
       //  printf("INSIDE ELSE++++++++++++++");
@@ -208,20 +210,19 @@ bool get_account_details(int connection_fd, struct Account *customer_account,int
         sprintf(write_buffer, "Account Details - \n\tAccount Number : %d\n\tAccount Status : %s",
         account.account_number, (account.is_active) ? "Active" : "Deactivated");
         if (account.is_active) {
-            sprintf(buff, "\n\tAccount Balance: ₹ %ld ", account.balance);
+            sprintf(buff, "\n\tAccount Balance: ₹ %ld", account.balance);
             strcat(write_buffer, buff);
-            strcat(write_buffer, "@");
+            strcat(write_buffer, "^");
         }
         
         // strcat(write_buffer, "");
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
+       
       }
-       //  rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+          rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
     }
-   
     return true;
 }
-
 
 
 bool get_account_by_number(int connection_fd, int account_num,struct Account *customer_account) {
@@ -263,6 +264,7 @@ bool get_account_by_number(int connection_fd, int account_num,struct Account *cu
         strcat(write_buffer, "^");
         perror("Error opening account file in get_account_details!");
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
+
         if (wb == -1)
         {
             perror("Error while writing ACCOUNT_ID_DOESNT_EXIT message to client!");
@@ -316,10 +318,12 @@ bool get_account_by_number(int connection_fd, int account_num,struct Account *cu
         strcpy(write_buffer, ACCOUNT_ID_DOESNT_EXIST);
         strcat(write_buffer, "^");
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        
         if (wb == -1) {
             perror("Error writing ACCOUNT_ID_DOESNT_EXIST message to client!");
             return false;
         }
+        rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read   
         return false;
     } 
     //  else {
@@ -337,7 +341,7 @@ bool get_account_by_number(int connection_fd, int account_num,struct Account *cu
 
         // strcat(write_buffer, "\n^");
        // wb = write(connection_fd, write_buffer, strlen(write_buffer));
-         rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
+        //  rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
     //  }
    
     return true;
@@ -373,7 +377,7 @@ bool update_account_in_file(int fd, struct Account *account)
 }
 
 
-bool lock_account(int fd, long int account_num)
+bool lock_account_(int fd, long int account_num)
 {
     struct Account tempAccount;
     
@@ -405,7 +409,7 @@ bool lock_account(int fd, long int account_num)
 }
 
 
-bool unlock_account(int fd, long int account_num)
+bool unlock_account_(int fd, long int account_num)
 {
     struct Account tempAccount;
     

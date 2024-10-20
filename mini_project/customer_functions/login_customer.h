@@ -203,7 +203,7 @@
 // }
 
 // Function to authenticate customer based on login ID and password
-int authenticate_customer(int connection_fd, const char *input_login, const char *input_pass)
+bool authenticate_customer(int connection_fd, const char *input_login, const char *input_pass)
 {
     struct Customer customer;
     char read_buffer[2000], write_buffer[2000];
@@ -247,7 +247,7 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
         {
             perror("Error writing INVALID_LOGIN_MSG message to client!");
         }
-        return 0;
+        return false;
     }
 
     // Hash the input password
@@ -268,15 +268,16 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
 
     if (strcmp(hex_hash, customer.password) == 0)
     {
-        sprintf(write_buffer, "%s", LOGIN_SUCCESSFULL_MSG);
-        printf("%s", write_buffer);
-        wb = write(connection_fd, write_buffer, strlen(write_buffer));
-        if (wb == -1)
-        {
-            perror("Error writing LOGIN_SUCCESSFULL_MSG message to client!");
-            return 0;
-        }
-        return 1; // Authentication success
+        // sprintf(write_buffer, "%s", LOGIN_SUCCESSFULL_MSG);
+        // // printf("%s", write_buffer);
+        // wb = write(connection_fd, write_buffer, strlen(write_buffer));
+        // if (wb == -1)
+        // {
+        //     perror("Error writing LOGIN_SUCCESSFULL_MSG message to client!");
+        //     return false;
+        // }
+       // int rb = read(connection_fd, read_buffer, sizeof(read_buffer));//dummy read
+        return true; // Authentication success
     }
     else
     {
@@ -286,9 +287,9 @@ int authenticate_customer(int connection_fd, const char *input_login, const char
         {
             perror("Error writing INVALID_PASSWORD_MSG message to client!");
         }
-        return 0; // Authentication failed
+        return false; // Authentication failed
     }
-    return 1;
+    return true;
 }
 
 // Function for handling customer login

@@ -13,6 +13,7 @@
 #include "header_files/data.h"
 #include "common_functions/admin_fun.h"
 #include "customer_functions/customer_funs.h"
+#include "user_functions/user_fun.h"
 
 
 void handle_client(int connection_fd) {
@@ -47,12 +48,13 @@ void handle_client(int connection_fd) {
                 case 3:
                 // Customer
                      printf("manager LOGIN:");
+                     user_operation_handler(connection_fd,2);
                 //customer_operation_handler(connection_fd);
                 break;
                 case 4:
                 // Customer
                      printf("bank employee LOGIN:");
-                //customer_operation_handler(connection_fd);
+                     user_operation_handler(connection_fd,1);
                 break;
             default:
                 // Exit

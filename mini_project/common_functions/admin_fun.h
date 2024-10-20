@@ -39,7 +39,6 @@ bool activate_deactivate_user(int connection_fd);
 bool add_account(int connection_fd);
 bool modify_user_details(int connection_fd);
 
-
 int add_customers(int connection_fd, bool from_account, int account_num)
 {
     char read_buffer[1000], write_buffer[1000];
@@ -59,34 +58,43 @@ int add_customers(int connection_fd, bool from_account, int account_num)
         return -1;
     }
     else
-    {
-        int offset = lseek(fd, -sizeof(struct Customer), SEEK_END);
-        if (offset == -1)
+    { // lseek(fd,0,SEEK_END);
+        int offset = lseek(fd, 0, SEEK_END);
+        if (offset == 0)
         {
-            perror("Error seeking to last Customer record!");
-            return false;
+            // File is empty
+            curr_customer.ID = 0;
         }
-        struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
-        int status = fcntl(fd, F_SETLKW, &lock);
-
-        if (status == -1)
+        else
         {
-            perror("Error obtaining read lock on Customer record!");
-            return false;
+            offset = lseek(fd, -sizeof(struct Customer), SEEK_END);
+            if (offset == -1)
+            {
+                perror("Error seeking to last Customer record!");
+                return false;
+            }
+            struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
+            int status = fcntl(fd, F_SETLKW, &lock);
+
+            if (status == -1)
+            {
+                perror("Error obtaining read lock on Customer record!");
+                return false;
+            }
+            rb = read(fd, &prev_customer, sizeof(struct Customer));
+            if (rb == -1)
+            {
+                perror("Error while reading Customer record from file!");
+                return false;
+            }
+
+            lock.l_type = F_UNLCK;
+            fcntl(fd, F_SETLK, &lock);
+
+            close(fd);
+
+            curr_customer.ID = prev_customer.ID + 1;
         }
-        rb = read(fd, &prev_customer, sizeof(struct Customer));
-        if (rb == -1)
-        {
-            perror("Error while reading Customer record from file!");
-            return false;
-        }
-
-        lock.l_type = F_UNLCK;
-        fcntl(fd, F_SETLK, &lock);
-
-        close(fd);
-
-        curr_customer.ID = prev_customer.ID + 1;
     }
 
     //-----------------------------------------------NAME--------------------------------------------------------------
@@ -435,34 +443,43 @@ bool add_account(int connection_fd)
     }
     else
     {
-        int offset = lseek(fd, -sizeof(struct Account), SEEK_END);
-        if (offset == -1)
+        int offset = lseek(fd, 0, SEEK_END);
+        if (offset == 0)
         {
-            perror("Error seeking to last Account record!");
-            return false;
+            // File is empty
+            curr_account.account_number = 0;
         }
-
-        struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
-        int lockingStatus = fcntl(fd, F_SETLKW, &lock);
-        if (lockingStatus == -1)
+        else
         {
-            perror("Error obtaining read lock on Account record!");
-            return false;
+            offset = lseek(fd, -sizeof(struct Account), SEEK_END);
+            if (offset == -1)
+            {
+                perror("Error seeking to last Account record!");
+                return false;
+            }
+
+            struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Account), getpid()};
+            int lockingStatus = fcntl(fd, F_SETLKW, &lock);
+            if (lockingStatus == -1)
+            {
+                perror("Error obtaining read lock on Account record!");
+                return false;
+            }
+
+            rb = read(fd, &prev_account, sizeof(struct Account));
+            if (rb == -1)
+            {
+                perror("Error while reading Account record from file!");
+                return false;
+            }
+
+            lock.l_type = F_UNLCK;
+            fcntl(fd, F_SETLK, &lock);
+
+            close(fd);
+
+            curr_account.account_number = prev_account.account_number + 1;
         }
-
-        rb = read(fd, &prev_account, sizeof(struct Account));
-        if (rb == -1)
-        {
-            perror("Error while reading Account record from file!");
-            return false;
-        }
-
-        lock.l_type = F_UNLCK;
-        fcntl(fd, F_SETLK, &lock);
-
-        close(fd);
-
-        curr_account.account_number = prev_account.account_number + 1;
     }
     // wb = write(connection_fd, ADMIN_ADD_ACCOUNT_TYPE, strlen(ADMIN_ADD_ACCOUNT_TYPE));
     // if (wb == -1)
@@ -519,7 +536,6 @@ bool add_account(int connection_fd)
     return true;
 }
 
-// void add_customer()
 int add_user(int connection_fd)
 {
     char read_buffer[2000], write_buffer[2000];
@@ -539,34 +555,43 @@ int add_user(int connection_fd)
         return -1;
     }
     else
-    {
-        int offset = lseek(fd, -sizeof(struct Customer), SEEK_END);
-        if (offset == -1)
+    { // lseek(fd,0,SEEK_END);
+        int offset = lseek(fd, 0, SEEK_END);
+        if (offset == 0)
         {
-            perror("Error seeking to last Customer record!");
-            return false;
+            // File is empty
+            curr_user.ID = 0;
         }
-        struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
-        int status = fcntl(fd, F_SETLKW, &lock);
-
-        if (status == -1)
+        else
         {
-            perror("Error obtaining read lock on Customer record!");
-            return false;
+            offset = lseek(fd, -sizeof(struct User), SEEK_END);
+            if (offset == -1)
+            {
+                perror("Error seeking to last Customer record!");
+                return false;
+            }
+            struct flock lock = {F_RDLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
+            int status = fcntl(fd, F_SETLKW, &lock);
+
+            if (status == -1)
+            {
+                perror("Error obtaining read lock on Customer record!");
+                return false;
+            }
+            rb = read(fd, &prev_user, sizeof(struct User));
+            if (rb == -1)
+            {
+                perror("Error while reading Customer record from file!");
+                return false;
+            }
+
+            lock.l_type = F_UNLCK;
+            fcntl(fd, F_SETLK, &lock);
+
+            close(fd);
+
+            curr_user.ID = prev_user.ID + 1;
         }
-        rb = read(fd, &prev_user, sizeof(struct Customer));
-        if (rb == -1)
-        {
-            perror("Error while reading Customer record from file!");
-            return false;
-        }
-
-        lock.l_type = F_UNLCK;
-        fcntl(fd, F_SETLK, &lock);
-
-        close(fd);
-
-        curr_user.ID = prev_user.ID + 1;
     }
     //-----------------------------------------------NAME--------------------------------------------------------------
 
@@ -687,13 +712,40 @@ int add_user(int connection_fd)
     // strcpy(newCustomer.password, hashedPassword);
     // wb = write(connection_fd, , strlen());
 
-    unsigned char hash_pass[EVP_MAX_MD_SIZE]; // Array to hold the resulting hash
-    char pass[150];                           // Adjusted size
-    // Hash the password
-    snprintf(pass, sizeof(pass), "%s%d", curr_user.name, curr_user.ID);
+    // unsigned char hash_pass[EVP_MAX_MD_SIZE]; // Array to hold the resulting hash
+    // char pass[150];                           // Adjusted size
+    // // Hash the password
+
+    unsigned char hash_pass[EVP_MAX_MD_SIZE]; // Array to hold the resulting binary hash
+    char pass[HASH_SIZE + 1];
+    char hex_hash[HASH_HEX_SIZE + 1]; // Array to hold the hexadecimal representation of the hash
+
+    // Generate a password string to hash
+    int length = snprintf(pass, sizeof(pass), "%s%d", curr_user.name, curr_user.ID);
+
+    if (length < 0 || length >= sizeof(pass))
+    {
+        fprintf(stderr, "Error: buffer too small for password generation\n");
+        // Handle error appropriately (e.g., exit or return from function)
+    }
+
+    // Hash the password string
     hash_password(pass, hash_pass);
-    strncpy(curr_user.password, (char *)hash_pass, sizeof(curr_user.password) - 1);
-    curr_user.password[sizeof(curr_user.password) - 1] = '\0'; // Ensure null termination
+
+    // Convert the binary hash to a hexadecimal string
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        sprintf(&hex_hash[i * 2], "%02x", hash_pass[i]);
+    }
+    hex_hash[HASH_HEX_SIZE] = '\0'; // Ensure null-termination
+
+    // Store the hexadecimal string as the password
+    strcpy(curr_user.password, hex_hash);
+
+    // snprintf(pass, sizeof(pass), "%s%d", curr_user.name, curr_user.ID);
+    // hash_password(pass, hash_pass);
+    // strncpy(curr_user.password, (char *)hash_pass, sizeof(curr_user.password) - 1);
+    // curr_user.password[sizeof(curr_user.password) - 1] = '\0'; // Ensure null termination
 
     fd = open(USER_FILE, O_CREAT | O_APPEND | O_WRONLY, 0777);
     if (fd == -1)
@@ -1631,7 +1683,7 @@ bool modify_user_details(int connection_fd)
 
     bool found = false;
     int fd = open(USER_FILE, O_RDWR);
-    lseek(fd,0,SEEK_SET);
+    lseek(fd, 0, SEEK_SET);
     if (fd == -1)
     {
         perror("User file doesn't exist");

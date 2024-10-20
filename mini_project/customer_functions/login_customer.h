@@ -249,7 +249,7 @@ bool authenticate_customer(int connection_fd, const char *input_login, const cha
         }
         return false;
     }
-
+    
     // Hash the input password
     unsigned char hash_pass[EVP_MAX_MD_SIZE];
     hash_password(input_pass, hash_pass);

@@ -18,14 +18,22 @@
 
 
 // ADMIN MENU
-#define ADMIN_MENU "\n1.Add customer\n2. Get Customer Details \n3. Add User(manager/employee)\n4. Modify Customer Information\n5. Change Password.\n7. Logout\n8. Add Account \n 9. Change user role \n 10 .Modify user information \n Press any other key to logout"
+#define ADMIN_MENU "\n1.Add customer\n2. Get Customer Details \n3. Add User(manager/employee)\n4. Modify Customer Information\n5. Change Password.\n7. Logout\n8. Add Account \n 9. Change user role \n 10 .Modify user information \n Press any other key to logout "
 
 
 //CUSTOMER MENU
-#define CUSTOMER_MENU "\n1.View Account Balance\n 2.Deposit Money\n 3.Withdraw Money\n 4.Transfer Funds \n 5.Apply for a Loan \n 6.Change Password \n 7.Adding Feedback \n 8.View Transaction History \n 9.Logout \n "
+#define CUSTOMER_MENU "\n1.View Account Balance\n 2.Deposit Money\n 3.Withdraw Money\n 4.Transfer Funds \n 5.Apply for a Loan \n 6.Change Password \n 7.Adding Feedback \n 8.View Transaction History \n 9.Logout \n Press any other key to logout "
 
 
-//ADD CUSTOMER
+//MANAGER MENU
+#define MANAGER_MENU "\n1.Activate/Deactivate Customer Account \n2.Assign Loan Application Processes to Employees \n3.Review Customer Feedback \n4.Change Password \n5.View Account details \n6.Logout \n Press any other key to logout "
+#define MANAGER_LOGIN_SUCCESS "Welcome Manager! \nEnter your credentials to unlock !"
+
+//EMPLOYEE MENU
+#define EMPLOYEE_LOGIN_SUCCESS "Welcome Employee! \nEnter your credentials to unlock !"
+#define EMPLOYEE_MENU "\n1.Add New Customer \n2.Modify Customer Details \n3.Approve/Reject Loans \n4.View Assigned Loan Applications \n5.View Customer Transactions \n6.Change Password \n7.Logout \n Press any other key to logout "
+
+//ADD CUSTOMERo
 ///#define ADMIN_ADD_CUSTOMER_PRIMARY "Enter the details for the primary customer\n"
 //#define ADMIN_ADD_CUSTOMER_SECONDARY "Enter the details for the secondary customer\n"
 #define ADMIN_ADD_CUSTOMER_NAME "Enter Customer name :"
@@ -112,7 +120,7 @@
 
 
 
-
+#define USER_LOGOUT "Logging Out!$"
 #define CUSTOMER_LOGOUT "Logging Out!$"
 #define GET_CUSTOMER_ID_MSG "Enter the customer ID of the customer you're searching for"
 #define CUSTOMER_ID_DOESNT_EXIT "No customer is there for the given CUSTOMER_ID"
@@ -156,9 +164,22 @@
 #define INVALID_MENU_CHOICE "It seems you've made an invalid menu choice\nYou'll now be redirected to the main menu!^"
 
 
-
 #define FEEDBACK_SUCCESS "Feedback is added successfully^"
 #define TRANSACTIONS_NOT_FOUND "There is no transaction on thias account^"
+#define USER_LOGIN_WELCOME "Welcome User" 
+
+
+//MANAGER DETAILS
+#define ENTER_LOAN_ID "Enter a loan id to assign :"
+#define ENTER_EMPLOYEE_ID "Enter a employee  id to which you want to assign a loan :"
+#define LOAN_ID_ASSIGN_SUCCESS "Loan ID  assigned to Employee ID  successfully^"
+#define LOAN_ID_NOTFOUND "Loan ID not found .^"
+#define EMPLOYEE_ID_NOTFOUND "Employee ID not found .^" 
+// #define USER_LOGIN_WELCOME "Welcome User"
+
+//EMPLOYEE DETAILS
+#define APPROVE_REJECT "Enter 1 to approve the loan,Press 0 to reject the loan :"
+
 
 //HASH SIZE
 #define HASH_SIZE 64

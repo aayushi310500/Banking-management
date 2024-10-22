@@ -5,7 +5,7 @@
 
 struct Transaction
 {
-    int transaction_ID; // 0, 1, 2, 3 ...
+    int transaction_ID;
     int account_number;
     bool operation; // 0 -> Withdraw, 1 -> Deposit
     long int old_balance;

@@ -6,7 +6,7 @@ struct Loan {
     double amount;
     int duration; // in months
     double interest_rate;
-    char status[20]; // e.g., "Pending", "Approved", "Rejected"
+    char status[20]; // "Pending", "Approved", "Rejected"
     int employee_id;
 };
 #endif

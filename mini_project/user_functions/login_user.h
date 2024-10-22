@@ -1,15 +1,15 @@
 #ifndef LOGIN_EMPLOYEE
 #define LOGIN_EMPLOYEE
 
-#include <stdio.h>     // Import for `printf` & `perror`
-#include <unistd.h>    // Import for `read`, `write & `lseek`
-#include <string.h>    // Import for string functions
-#include <stdbool.h>   // Import for `bool` data type
-#include <sys/types.h> // Import for `open`, `lseek`
-#include <sys/stat.h>  // Import for `open`
-#include <fcntl.h>     // Import for `open`
-#include <stdlib.h>    // Import for `atoi`
-#include <errno.h>     // Import for `errno`
+#include <stdio.h>     
+#include <unistd.h>    
+#include <string.h>    
+#include <stdbool.h>   
+#include <sys/types.h>
+#include <sys/stat.h>  
+#include <fcntl.h>    
+#include <stdlib.h>
+#include <errno.h>    
 #include <sodium.h>
 
 #include <openssl/evp.h>
@@ -46,6 +46,8 @@ bool authenticate_user_(int connection_fd, const char *input_login, const char *
     ssize_t bytesRead;
     while ((bytesRead = read(fd, &user, sizeof(struct User))) > 0)
     {
+        printf("enterd login %s %s %s %s %d===========\n",input_login, input_pass, user.login_id, user.password,user.is_active);
+
         if (strcmp(user.login_id, input_login) == 0 && user.is_active)
         {
             userFound = true;
@@ -56,10 +58,13 @@ bool authenticate_user_(int connection_fd, const char *input_login, const char *
         perror("Error reading from user file!");
     }
 
+
+        printf("user found %d",userFound);
     close(fd);
 
     if (!userFound || user.role != role_)
     {
+        printf("udser role-------%d %d",user.role,role_);
         sprintf(write_buffer, "%s", INVALID_LOGIN_MSG);
         wb = write(connection_fd, write_buffer, strlen(write_buffer));
         if (wb == -1)

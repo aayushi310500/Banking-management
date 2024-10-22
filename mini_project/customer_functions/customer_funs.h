@@ -1,16 +1,16 @@
 #ifndef CUSTOMER_FUNCTIONS_H
 #define CUSTOMER_FUNCTIONS_H
 
-#include <stdio.h>     // Import for `printf` & `perror`
-#include <unistd.h>    // Import for `read`, `write & `lseek`
-#include <string.h>    // Import for string functions
-#include <stdbool.h>   // Import for `bool` data type
-#include <sys/types.h> // Import for `open`, `lseek`
-#include <sys/stat.h>  // Import for `open`
-#include <fcntl.h>     // Import for `open`
-#include <stdlib.h>    // Import for `atoi`
-#include <errno.h>     // Import for `errno`
-// #include <sodium.h>
+#include <stdio.h>     
+#include <unistd.h>   
+#include <string.h>   
+#include <stdbool.h>  
+#include <sys/types.h> 
+#include <sys/stat.h>  
+#include <fcntl.h>     
+#include <stdlib.h>   
+#include <errno.h>     
+
 #include <sys/sem.h>
 
 #include <openssl/evp.h>
@@ -130,7 +130,6 @@ bool customer_operation_handler(int connection_fd)
                 // printf("inside case 1:");
                 // view_account_details(connection_fd,loggedInCustomer.ID);
                 // perror("case1");
-
                 get_balance(connection_fd);
                 break;
             case 2:
@@ -138,7 +137,6 @@ bool customer_operation_handler(int connection_fd)
                 // sprintf(write_buffer, "You selected option 2: Transfer Funds\n");
                 deposit_money(connection_fd);
                 break;
-
             case 3:
                 withdraw_money(connection_fd);
                 break;
@@ -906,7 +904,7 @@ bool apply_for_loan(int connection_fd)
     bzero(read_buffer, sizeof(read_buffer));
 
     // Notify the customer that the application has been submitted
-    snprintf(write_buffer, sizeof(write_buffer), "\nYour Loan Id: %d",
+    snprintf(write_buffer, sizeof(write_buffer), "\nYour Loan Id is: %d",
              new_loan.loan_id);
 
     strcat(write_buffer, "\nLoan application submitted successfully.^");
@@ -1191,6 +1189,38 @@ int write_transaction_to_file(int accountNumber, long int oldBalance, long int n
 //     return true;
 // }
 
+bool get_customer_details_(int connection_fd, struct Customer *customer, int customer_id)
+{
+    ssize_t rb, wb;                              // Number of bytes read from / written to the socket
+    char read_buffer[1000], write_buffer[10000]; // A buffer for reading from / writing to the socket
+    struct Customer temp_customer;
+    int fd;
+    struct flock lock = {F_RDLCK, SEEK_SET, 0, sizeof(struct Customer), getpid()};
+   
+
+    // If customer_id is -1, prompt client for a valid ID
+
+    // Open the customer file for reading
+    fd = open(CUSTOMER_FILE, O_RDONLY);
+    if (fd == -1)
+    {
+        return false;
+    }
+     
+    // Read through the customer file to find the matching customer_id
+    while (read(fd, &temp_customer, sizeof(struct Customer)) > 0)
+    {
+        if (customer->ID == customer_id)
+        {
+            // Found the customer, apply a read lock
+            lock.l_start = lseek(fd, -sizeof(struct Customer), SEEK_CUR);
+            *customer = temp_customer;
+            return true;
+        }
+    }
+    return false;
+}
+
 void write_transaction_to_array(int *transactionArray, int ID)
 {
     // Check if there's any free space in the array to write the new transaction ID
@@ -1218,6 +1248,14 @@ bool change_password(int connection_fd)
     ssize_t rb, wb;
     char read_buff[1000], newPassword[1000];
     char hashedNewPassword[HASH_HEX_SIZE + 1];
+
+    struct Customer customer;
+
+    customer.account_no = loggedInCustomer.account_no;
+
+   // get_customer_details_(connection_fd, &loggedInCustomer, loggedInCustomer.account_no);
+    printf("stored hash: %s", loggedInCustomer.password);
+    fflush(stdout);
 
     // Lock the critical section
     struct sembuf semOp = {0, -1, SEM_UNDO};
@@ -1259,6 +1297,11 @@ bool change_password(int connection_fd)
     current_hex_hash[HASH_HEX_SIZE] = '\0'; // Null-terminate the string
 
     // Step 2: Check if the old password matches the stored password
+
+    printf("Current entered hash : %s ", current_hex_hash);
+    fflush(stdout);
+    printf("stored hash: %s", loggedInCustomer.password);
+    fflush(stdout);
     if (strcmp(current_hex_hash, loggedInCustomer.password) == 0)
     {
         // Password matches, proceed to request new password
@@ -1381,7 +1424,6 @@ bool change_password(int connection_fd)
     unlock_critical_section(&semOp);
     return false;
 }
-
 
 // bool change_password(int connection_fd)
 // {

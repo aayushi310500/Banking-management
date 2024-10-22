@@ -1,18 +1,18 @@
 #ifndef COMMON_FUNCTIONS_H
 #define COMMON_FUNCTIONS_H
 
-#include <stdio.h> // Import for `printf` & `perror` functions
-#include <errno.h> // Import for `errno` variable
+#include <stdio.h> 
+#include <errno.h> 
 
-#include <fcntl.h>      // Import for `fcntl` functions
-#include <unistd.h>     // Import for `fork`, `fcntl`, `read`, `write`, `lseek, `_exit` functions
-#include <sys/types.h>  // Import for `socket`, `bind`, `listen`, `accept`, `fork`, `lseek` functions
-#include <sys/socket.h> // Import for `socket`, `bind`, `listen`, `accept` functions
-#include <netinet/ip.h> // Import for `sockaddr_in` stucture
+#include <fcntl.h>     
+#include <unistd.h>     
+#include <sys/types.h>  
+#include <sys/socket.h> 
+#include <netinet/ip.h> 
 
-#include <string.h>  // Import for string functions
-#include <stdbool.h> // Import for `bool` data type
-#include <stdlib.h>  // Import for `atoi` function
+#include <string.h>  
+#include <stdbool.h> 
+#include <stdlib.h>  
 
 #include "../header_files/data.h"
 #include "../struct_files/account.h"

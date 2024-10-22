@@ -1,12 +1,12 @@
-#include <stdio.h>      // Import for `printf` & `perror` functions
-#include <errno.h>      // Import for `errno` variable
-#include <fcntl.h>      // Import for `fcntl` functions
-#include <unistd.h>     // Import for `fork`, `fcntl`, `read`, `write`, `lseek, `_exit` functions
-#include <sys/types.h>  // Import for `socket`, `bind`, `listen`, `connect`, `fork`, `lseek` functions
-#include <sys/socket.h> // Import for `socket`, `bind`, `listen`, `connect` functions
-#include <netinet/ip.h> // Import for `sockaddr_in` stucture
-#include <string.h>     // Import for string functions
-#include <stdlib.h>     //Import exit(1)
+#include <stdio.h>      
+#include <errno.h>      
+#include <fcntl.h>     
+#include <unistd.h>     
+#include <sys/types.h>  
+#include <sys/socket.h>
+#include <netinet/ip.h> 
+#include <string.h>    
+#include <stdlib.h>    
 
 #include "header_files/data.h"
 
@@ -15,8 +15,8 @@
 
 void connection_handler(int socket_fd)
 {
-    char read_buffer[1000], write_buffer[1000]; // A buffer used for reading from / writting to the server
-    ssize_t rb, wb;                             // Number of bytes read from / written to the socket
+    char read_buffer[1000], write_buffer[1000]; 
+    ssize_t rb, wb;                            
 
     char buff[1000];
 
@@ -25,17 +25,16 @@ void connection_handler(int socket_fd)
         // printf("hhhh");
         // fflush(stdout);
         // fflush(stdin);
-        bzero(read_buffer, sizeof(read_buffer));   // Empty the read buffer
-        bzero(write_buffer, sizeof(write_buffer)); // Empty the read buffer
-        bzero(buff, sizeof(buff));                 // empty buff
+       bzero(read_buffer, sizeof(read_buffer));   // Empty the read buffer
+       bzero(write_buffer, sizeof(write_buffer)); // Empty the read buffer
+       bzero(buff, sizeof(buff));                 // empty buff
         // fflush(stdout);
         // fflush(stdin);
         
         rb = read(socket_fd, read_buffer, sizeof(read_buffer));
         // fflush(stdout);
         // fflush(stdin);
-        //   printf("------------------------------------------------------------->>>>>>>>>>>>>>>>>>>%s\n", read_buffer);
-        //   printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<-----------------------------------------------------------------------------------------");
+       
         if (rb == -1)
         {
             // printf("IN9");
@@ -54,15 +53,22 @@ void connection_handler(int socket_fd)
             // fflush(stdout);
             // fflush(stdin);
             // strncpy(buff, read_buffer, strlen(read_buffer) - 1);
-            printf("%s", read_buffer);
-            // fflush(stdout);
-            // fflush(stdin);
+            strncpy(buff, read_buffer, strlen(read_buffer) - 1);
+            printf("%s\n", buff);
             wb = write(socket_fd, "^", strlen("^"));
             if (wb == -1)
             {
                 perror("Error while writing to client socket!");
                 break;
             }
+            // fflush(stdout);
+            // fflush(stdin);
+            // wb = write(socket_fd, "^", strlen("^"));
+            // if (wb == -1)
+            // {
+            //     perror("Error while writing to client socket!");
+            //     break;
+            // }
         }
         else if (strchr(read_buffer, '$') != NULL)
         {
@@ -125,7 +131,6 @@ void connection_handler(int socket_fd)
                 //printf("IN6");
                 wb = write(socket_fd, write_buffer, strlen(write_buffer));
 
-                //  printf("writng from th------e client side..");
                 if (wb == -1) {
                     perror("Error while writing to client socket!");
                     printf("Closing the connection to the server now!\n");

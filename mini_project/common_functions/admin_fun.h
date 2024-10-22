@@ -39,6 +39,7 @@ bool activate_deactivate_user(int connection_fd);
 bool add_account(int connection_fd);
 bool modify_user_details(int connection_fd);
 
+
 int add_customers(int connection_fd, bool from_account, int account_num)
 {
     char read_buffer[1000], write_buffer[1000];
@@ -268,7 +269,7 @@ int add_customers(int connection_fd, bool from_account, int account_num)
         return false;
     }
 
-    // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    read(connection_fd, read_buffer, sizeof(read)); // Dummy read
     if (!from_account)
     { // rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
         bzero(write_buffer, sizeof(write_buffer));
@@ -278,7 +279,7 @@ int add_customers(int connection_fd, bool from_account, int account_num)
         rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
     }
 
-    rb = read(connection_fd, read_buffer, sizeof(read)); // Dummy read
+    // read(connection_fd, read_buffer, sizeof(read)); // Dummy read
     return curr_customer.ID;
 }
 
@@ -595,11 +596,11 @@ int add_user(int connection_fd)
     }
     //-----------------------------------------------NAME--------------------------------------------------------------
 
-    sprintf(write_buffer, "%s", ADMIN_ADD_CUSTOMER_NAME);
+    sprintf(write_buffer, "%s", ADMIN_ADD_USER_NAME);
     wb = write(connection_fd, write_buffer, strlen(write_buffer)); // change
     if (wb == -1)
     {
-        perror("Error writing ADMIN_ADD_CUSTOMER_NAME message to client!");
+        perror("Error writing ADMIN_ADD_USER_NAME message to client!");
         return false;
     }
 
@@ -614,7 +615,7 @@ int add_user(int connection_fd)
 
     //--------------------------------------------GENDER---------------------------------------------------------
 
-    wb = write(connection_fd, ADMIN_ADD_CUSTOMER_GENDER, strlen(ADMIN_ADD_CUSTOMER_GENDER));
+    wb = write(connection_fd, ADMIN_ADD_USER_GENDER, strlen(ADMIN_ADD_USER_GENDER));
     if (wb == -1)
     {
         perror("Error writing ADMIN_ADD_CUSTOMER_GENDER message to client!");
@@ -633,7 +634,7 @@ int add_user(int connection_fd)
         curr_user.gender = read_buffer[0];
     else
     {
-        wb = write(connection_fd, ADMIN_ADD_CUSTOMER_WRONG_GENDER, strlen(ADMIN_ADD_CUSTOMER_WRONG_GENDER));
+        wb = write(connection_fd, ADMIN_ADD_USER_WRONG_GENDER, strlen(ADMIN_ADD_USER_WRONG_GENDER));
         rb = read(connection_fd, read_buffer, sizeof(read_buffer)); // Dummy read
         return false;
     }
@@ -641,7 +642,7 @@ int add_user(int connection_fd)
     //----------------------------------------------AGE-----------------------------------------------------------
 
     bzero(write_buffer, sizeof(write_buffer));
-    strcpy(write_buffer, ADMIN_ADD_CUSTOMER_AGE);
+    strcpy(write_buffer, ADMIN_ADD_USER_AGE);
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {
@@ -686,7 +687,7 @@ int add_user(int connection_fd)
 
     //----------------------------------------------Email Address-----------------------------------------------------------
     bzero(write_buffer, sizeof(write_buffer));
-    strcpy(write_buffer, ADMIN_ADD_EMAIL_ID);
+    strcpy(write_buffer, ADMIN_ADD_USER_EMAIL_ID);
     wb = write(connection_fd, write_buffer, strlen(write_buffer));
     if (wb == -1)
     {
@@ -763,7 +764,7 @@ int add_user(int connection_fd)
     close(fd);
 
     bzero(write_buffer, sizeof(write_buffer)); // change
-    sprintf(write_buffer, "%s%s\n%s%s%d\n", ADMIN_ADD_CUSTOMER_AUTOGEN_LOGIN, curr_user.login_id, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, curr_user.name, curr_user.ID);
+    sprintf(write_buffer, "%s%s\n%s%s%d\n%s%d", ADMIN_ADD_USER_AUTOGEN_LOGIN, curr_user.login_id, ADMIN_ADD_CUSTOMER_AUTOGEN_PASSWORD, curr_user.name, curr_user.ID ,"Your user id is :",curr_user.ID);
     strcat(write_buffer, "\nRedirecting you to the main menu ...^");
     // strcat(write_buffer, "^");
     // printf("write_buffer====%s", write_buffer);

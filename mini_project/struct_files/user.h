@@ -1,13 +1,13 @@
 #ifndef USER_H
 #define USER_H
 struct User {
-    int ID;           // Unique ID for the user
-    char name[100];        // User's name
-    char email[100];       // User's email or login ID
-    char password[100];    // Hashed password
+    int ID;           
+    char name[100];        
+    char email[100];      
+    char password[100];   
     char login_id[100];
-    int role;              // Role of the user ( 1 - Employee, 2 - Manager)
-    bool is_active;         // 1 for active, 0 for deactivated users
+    int role;             
+    bool is_active;         
     char gender;
     int age;
 };

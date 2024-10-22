@@ -1,16 +1,15 @@
 #ifndef USER_FUN_H
 #define USER_FUN_H
 
-#include <stdio.h>     // Import for `printf` & `perror`
-#include <unistd.h>    // Import for `read`, `write & `lseek`
-#include <string.h>    // Import for string functions
-#include <stdbool.h>   // Import for `bool` data type
-#include <sys/types.h> // Import for `open`, `lseek`
-#include <sys/stat.h>  // Import for `open`
-#include <fcntl.h>     // Import for `open`
-#include <stdlib.h>    // Import for `atoi`
-#include <errno.h>     // Import for `errno`
-// #include <sodium.h>
+#include <stdio.h>     
+#include <unistd.h>  
+#include <string.h>    
+#include <stdbool.h>   
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <fcntl.h>    
+#include <stdlib.h>
+#include <errno.h>    
 #include <sys/sem.h>
 
 #include <openssl/evp.h>
@@ -31,10 +30,10 @@
 int sem_id;
 bool user_operation_handler(int connection_fd,int role_)
 {
-    // Assume `loggedInCustomer` is properly declared and initialized elsewhere
+    
     struct User loggedInUser;
 
-    // Attempt to log in the customer
+    
     int ans = login_handler_user(connection_fd, &loggedInUser ,role_);
     if (ans && role_==2)
     {
@@ -42,25 +41,25 @@ bool user_operation_handler(int connection_fd,int role_)
         ssize_t rb, wb;
         int choice;
 
-        key_t semKey = ftok(USER_FILE, loggedInUser.ID); // Generate a key based on the account number hence, different customers will have different semaphores
+        key_t semKey = ftok(USER_FILE, loggedInUser.ID); 
 
         union semun
         {
-            int val; // Value of the semaphore
+            int val; 
         } semSet;
 
         int semctlStatus;
-        sem_id = semget(semKey, 1, 0); // Get the semaphore if it exists
+        sem_id = semget(semKey, 1, 0); 
         if (sem_id == -1)
         {
-            sem_id = semget(semKey, 1, IPC_CREAT | 0700); // Create a new semaphore
+            sem_id = semget(semKey, 1, IPC_CREAT | 0700); 
             if (sem_id == -1)
             {
                 perror("Error while creating semaphore!");
                 _exit(1);
             }
 
-            semSet.val = 1; // Set a binary semaphore
+            semSet.val = 1; 
             semctlStatus = semctl(sem_id, 0, SETVAL, semSet);
             if (semctlStatus == -1)
             {
@@ -107,7 +106,7 @@ bool user_operation_handler(int connection_fd,int role_)
             switch (choice)
             {
             case 1:
-                // Example operation for case 1 (e.g., view account details)
+                
                 //  sprintf(write_buffer, "You selected option 1: View Account Details\n");
                 // printf("inside case 1:");
                 // view_account_details(connection_fd,loggedInCustomer.ID);
@@ -116,7 +115,7 @@ bool user_operation_handler(int connection_fd,int role_)
                 activate_deactivate_user_(connection_fd);
                 break;
             case 2:
-                // Example operation for case 2 (e.g., transfer funds)
+                
                 // sprintf(write_buffer, "You selected option 2: Transfer Funds\n");
                 //  deposit_money(connection_fd);
                 assign_loan_to_employee(connection_fd);
@@ -165,25 +164,25 @@ bool user_operation_handler(int connection_fd,int role_)
         ssize_t rb, wb;
         int choice;
 
-        key_t semKey = ftok(USER_FILE, loggedInUser.ID); // Generate a key based on the account number hence, different customers will have different semaphores
+        key_t semKey = ftok(USER_FILE, loggedInUser.ID); 
 
         union semun
         {
-            int val; // Value of the semaphore
+            int val; 
         } semSet;
 
         int semctlStatus;
-        sem_id = semget(semKey, 1, 0); // Get the semaphore if it exists
+        sem_id = semget(semKey, 1, 0); 
         if (sem_id == -1)
         {
-            sem_id = semget(semKey, 1, IPC_CREAT | 0700); // Create a new semaphore
+            sem_id = semget(semKey, 1, IPC_CREAT | 0700); 
             if (sem_id == -1)
             {
                 perror("Error while creating semaphore!");
                 _exit(1);
             }
 
-            semSet.val = 1; // Set a binary semaphore
+            semSet.val = 1; 
             semctlStatus = semctl(sem_id, 0, SETVAL, semSet);
             if (semctlStatus == -1)
             {
@@ -230,20 +229,20 @@ bool user_operation_handler(int connection_fd,int role_)
             switch (choice)
             {
             case 1:
-               add_account(connection_fd);
                 break;
             case 2:
                   modify_customer_details(connection_fd);
                 break;
             case 3:
-             
+                 approve_reject_loans(connection_fd,loggedInUser.ID);
                 break;
             case 4:
-                 approve_reject_loans(connection_fd,loggedInUser.ID);
+                 view_assigned_loan_application(connection_fd,loggedInCustomer.ID);
                 break;
           
             case 5:
                get_transaction_details(connection_fd,-1);
+               break;
             case 6:
                
             break;
@@ -254,10 +253,10 @@ bool user_operation_handler(int connection_fd,int role_)
                 {
                     perror("Error while sending logout message to client");
                 }
-                return false; // Exit the function and return false
+                return false; 
                 break;   
             default:
-                // Invalid choice handling
+            
                 sprintf(write_buffer, "Invalid choice. Please try again.\n");
                 break;
             }
@@ -275,11 +274,10 @@ bool user_operation_handler(int connection_fd,int role_)
     }
     else
     {
-        // If login fails, return false
+   
         return false;
     }
 
-    // Return true after successful operations
     return true;
 }
 

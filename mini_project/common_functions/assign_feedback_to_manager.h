@@ -14,7 +14,7 @@
 void show_managers() {
     char read_buffer[1000], write_buffer[1000];
     ssize_t rb, wb;
-    // Open the file that stores the admin login ID and hashed password
+
     int fd = open("/home/aayushi312000/MTech/SS/Banking-management/mini_project/stored_data/manager_records.txt", O_RDONLY);
     if (fd == -1) {
         perror("Error while opening admin password file");
